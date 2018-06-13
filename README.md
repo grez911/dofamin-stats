@@ -1,2 +1,2 @@
 # dofamin-stats
-Plot distibution from https://dofamin.org/
+Plot distibution graph from https://dofamin.org/
