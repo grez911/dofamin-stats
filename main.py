@@ -2,6 +2,7 @@
 # Project page: https://github.com/grez911/dofamin-stats
 
 import requests
+import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 from bs4 import BeautifulSoup
@@ -49,7 +50,7 @@ def prepare(data):
   for days in sorted(data):
     x.append(days)
     y.append(data[days])
-  x = np.array(x)
+  x = np.array(x) + 0.5
   y = np.array(y)
   return x, y
 
@@ -64,20 +65,28 @@ def plot(x, y):
   Outputs nothing.
   '''
   print("Making plot.png...")
-  t = np.arange(1, 500, 1)
+  t = np.arange(0.5, 500.5, 1)
   fig, ax = plt.subplots()
-  ax.semilogx(x, y)
-  ax.semilogx(t, 60/t)
-  ax.set(xlabel='nofap time (days)', ylabel='count (humans)')
+  ax.semilogx(x, y/np.sum(y), 'b.')
+  #ax.semilogx(t, 60/t)
+  #a = 2
+  #b = np.exp(-t)
+  #b = 1
+  #c = 0
+  #ax.semilogx(t, a*np.exp(-b * (t-c)))
+  ax.set(xlabel='nofap time (days)', ylabel='proportion of people',
+         title='Nofap time distribution')
   ax.grid(True, which='both')
   fig.savefig("plot.png")
+  plt.show()
 
 def main():
   '''
   Main function.
   Inputs and outputs nothing.
   '''
-  x, y = prepare(get_data())
+  pickle.dump(prepare(get_data()), open("data.p", 'wb'))
+  x, y = pickle.load(open("data.p", 'rb'))
   plot(x, y)
   total = np.sum(y)
   avg = np.sum(x * y) / total
