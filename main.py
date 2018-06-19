@@ -127,7 +127,6 @@ def plot(x, y):
   fig, ax = plt.subplots()
   ax.semilogx(x, y, 'b.')
   xc, yc, params = find_curve(x, y, learning_rate=5 * 10**(-3), epochs=2 * 10**5)
-  #xc, yc, params = find_curve(x, y, learning_rate=10**(-3), epochs= 10**3)
   ax.semilogx(xc, yc, '#ff7f0e', label=f'${params[0]}e^{{{params[1]}x}}$')
   plt.title("Nofap time distribution")
   plt.xlabel("nofap time (days)")
@@ -141,10 +140,8 @@ def main():
   Main function.
   Inputs and outputs nothing.
   '''
-  #import pickle
+  plt.rc('font', size=16)
   data = get_data()
-  #pickle.dump(data, open("data.p", 'wb'))
-  #x, y = prepare(pickle.load(open("data.p", 'rb')))
   x, y = prepare(data)
   plot(x, y)
 

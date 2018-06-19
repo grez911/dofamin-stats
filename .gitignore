@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 *.png
 *.csv
+*.svg
 *.p
 .*
 !/.gitignore
