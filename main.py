@@ -142,6 +142,10 @@ def main():
   '''
   plt.rc('font', size=16)
   data = get_data()
+
+  import pickle
+  pickle.dump(data, open("data.p", "wb"))
+  data = pickle.load(open("data.p", "rb" ))
   x, y = prepare(data)
   plot(x, y)
 

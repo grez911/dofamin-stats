@@ -3,6 +3,5 @@ __pycache__/
 *.png
 *.csv
 *.svg
-*.p
 .*
 !/.gitignore
