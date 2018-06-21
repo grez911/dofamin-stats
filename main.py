@@ -72,6 +72,30 @@ def mse(y1, y2):
   '''
   return ((y1 - y2) ** 2).mean()
 
+def mae(y_pred, y_true):
+  '''
+  A mean absolute error.
+
+  Input:
+  y_pred - predicted values;
+  y_true - true values.
+  
+  Output a mean absolute error.
+  '''
+  return np.abs(y_pred - y_true).mean()
+
+def dmae(y_pred, y_true):
+  '''
+  Derivative of a mean absolute error.
+
+  Input:
+  y_pred - predicted values;
+  y_true - true values.
+    
+  Output derivatives of a mean absolute error.
+  '''
+  return (y_pred > y_true) * 2 - 1
+
 def find_curve(x, y, learning_rate, epochs):
   '''
   Find distribution function via gradient descend.
@@ -88,43 +112,63 @@ def find_curve(x, y, learning_rate, epochs):
   '''
   print("Making gradient descent...")
   m = len(x) # Number of training points.
-  a = 0.206
-  b = -0.258
-  c = 0.0583
-  d = 0.0922
-  h = 0
-  k = 0
+  # a = 0.20343481943836123
+  # b = 0.22433324176637687
+  # c = -0.1368608481534363
+  # d = 0.11958976232605449
+  # h = -0.3837987830524068
+  # k = 0.0012940576086103164
+  a = 0.2071115853282763
+  b = 0.22558578261029436
+  c = -0.13080004408767462
+  d = 0.11987149384005813
+  h = -0.3835566172190995
+  k = 0.0020480366624179777
+  p = 0
   for i in range(epochs+1):
     if i % 1000 == 0:
-      yc = a * np.exp((b * np.exp(c * x) + d) * x + h) + k
-      loss = mse(y, yc)
+      yc = a * np.exp((b * np.exp(c * x + d) + h) * x + k) + p
+      loss = mae(yc, y)
+      # loss = mse(yc, y)
       print(f"Epoch {i}: loss = {loss}")
-      print(f"a = {a}, b = {b}, c = {c}, d = {d}, h = {h}, k = {k}")
-    da = np.sum(2/m * (yc - y) * np.exp(x * (b * np.exp(c * x) + d) +h))
-    db = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x) + d) + c * x + h))
-    dc = np.sum(2/m * (yc - y) * a * b * x**2 * np.exp(x * (b * np.exp(c * x) + d) + c * x + h))
-    dd = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x) + d) + h))
-    dh = np.sum(2/m * (yc - y) * a * np.exp(x * (b * np.exp(c * x) + d) + h))
-    dk = np.sum(2/m * (yc - y))
+      print(f"a = {a}, b = {b}, c = {c}, d = {d}, h = {h}, k = {k}, p = {p}")
+    # da = np.sum(2/m * (yc - y) * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    # db = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    # dc = np.sum(2/m * (yc - y) * a * b * x**2 * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    # dd = np.sum(2/m * (yc - y) * a * b * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    # dh = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    # dk = np.sum(2/m * (yc - y) * a * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    # dp = np.sum(2/m * (yc - y))
+
+    da = np.sum(2/m * dmae(yc, y) * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    db = np.sum(2/m * dmae(yc, y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    dc = np.sum(2/m * dmae(yc, y) * a * b * x**2 * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    dd = np.sum(2/m * dmae(yc, y) * a * b * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    dh = np.sum(2/m * dmae(yc, y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    dk = np.sum(2/m * dmae(yc, y) * a * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    #dp = np.sum(2/m * dmae(yc, y))
+    
     a -= da * learning_rate
     b -= db * learning_rate
     c -= dc * learning_rate
     d -= dd * learning_rate
-#    h -= dh * learning_rate
-#    k -= dk * learning_rate
+    h -= dh * learning_rate
+    k -= dk * learning_rate
+    #p -= dp * learning_rate
   #a = np.around(a, 3)
   #b = np.around(b, 3)
   print("-------")
-  print("Found solution for the function y(x) = a * e^((b * e^(c * x) + d) * x + h) + k:")
+  print("Found solution for the function y(x) = a * e^((b * e^(c * x + d) + h) * x + k) + p:")
   print(f"a = {a}")
   print(f"b = {b}")
   print(f"c = {c}")
   print(f"d = {d}")
   print(f"h = {h}")
   print(f"k = {k}")
+  print(f"p = {p}")
   xc = np.logspace(np.log10(0.5), np.log10(max(x)))
-  yc = a * np.exp((b * np.exp(c * xc) + d) * xc + h) + k
-  return xc, yc, (a, b, c, d, h, k)
+  yc = a * np.exp((b * np.exp(c * xc + d) + h) * xc + k) + p
+  return xc, yc, (a, b, c, d, h, k, p)
 
 def plot(x, y):
   '''
@@ -134,7 +178,7 @@ def plot(x, y):
   '''
   fig, ax = plt.subplots()
   ax.semilogx(x, y, 'b.')
-  xc, yc, params = find_curve(x, y, learning_rate=100 * 10**(-3), epochs=1 * 10**5)
+  xc, yc, params = find_curve(x, y, learning_rate=1 * 10**(-4), epochs=1 * 10**5)
   ax.semilogx(xc, yc, '#ff7f0e')#, label=f'${params[0]}e^{{{params[1]}x}}$')
   plt.title("Nofap time distribution")
   plt.xlabel("nofap time (days)")
