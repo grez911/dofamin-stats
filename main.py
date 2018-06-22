@@ -60,6 +60,29 @@ def prepare(data):
   y = y / np.sum(y)
   return x, y
 
+def fill_gaps(y):
+  '''
+  Replace zeros in `y` with mean values. E.g.
+  [8, 4, 0, 2, 0, 0, 0, 1] will become
+  [8, 4, 1, 1, 0.25, 0.25, 0.25, 0.25].
+  
+  Input:
+  y - array with zeros.
+  
+  Output:
+  y - array without zeros.
+  '''
+  last_nonzero = len(y) - 1
+  counter = 1
+  for i in reversed(range(len(y))):
+    if y[i] != 0:
+      y[i+1:last_nonzero+1] = y[last_nonzero] / counter
+      counter = 1
+      last_nonzero = i
+    else:
+      counter += 1
+  return(y)
+
 def mse(y1, y2):
   '''
   Mean square error.
@@ -112,41 +135,43 @@ def find_curve(x, y, learning_rate, epochs):
   '''
   print("Making gradient descent...")
   m = len(x) # Number of training points.
-  # a = 0.20343481943836123
-  # b = 0.22433324176637687
-  # c = -0.1368608481534363
-  # d = 0.11958976232605449
-  # h = -0.3837987830524068
-  # k = 0.0012940576086103164
-  a = 0.24384883350818026
-  b = -0.2221405948018361
-  c = -0.04600091509454806
-  d = 0.11910023998131503
-  h = -0.11175676840011015
-  k = 0.01033153077114638
-  p = 0
+  a = 0.31379330453162924
+  b = 0.28748657127515836
+  c = -0.05986857836271425
+  d = 0.1357512985372947
+  h = -0.2899616489649545
+  k = 0.029834249848520063
+  p = -8.789158028292139
+
+  # a = 1.7903939776338165
+  # b = 0
+  # c = 0
+  # d = 0
+  # h = -2.755929132216683
+  # k = 1.5833140484509383
+  # p = -8.911237101387389
   for i in range(epochs+1):
     if i % 1000 == 0:
       yc = a * np.exp((b * np.exp(c * x + d) + h) * x + k) + p
-      loss = mae(yc, y)
-      # loss = mse(yc, y)
+      #loss = mae(yc, y)
+      loss = mse(yc, y)
       print(f"Epoch {i}: loss = {loss}")
       print(f"a = {a}, b = {b}, c = {c}, d = {d}, h = {h}, k = {k}, p = {p}")
-    # da = np.sum(2/m * (yc - y) * np.exp(x * (b * np.exp(c * x + d) + h) + k))
-    # db = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
-    # dc = np.sum(2/m * (yc - y) * a * b * x**2 * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
-    # dd = np.sum(2/m * (yc - y) * a * b * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
-    # dh = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + k))
-    # dk = np.sum(2/m * (yc - y) * a * np.exp(x * (b * np.exp(c * x + d) + h) + k))
-    # dp = np.sum(2/m * (yc - y))
+    da = np.sum(2/m * (yc - y) * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    db = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    dc = np.sum(2/m * (yc - y) * a * b * x**2 * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    dd = np.sum(2/m * (yc - y) * a * b * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    dh = np.sum(2/m * (yc - y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    dk = np.sum(2/m * (yc - y) * a * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    dp = np.sum(2/m * (yc - y))
 
-    da = np.sum(2/m * dmae(yc, y) * np.exp(x * (b * np.exp(c * x + d) + h) + k))
-    db = np.sum(2/m * dmae(yc, y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
-    dc = np.sum(2/m * dmae(yc, y) * a * b * x**2 * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
-    dd = np.sum(2/m * dmae(yc, y) * a * b * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
-    dh = np.sum(2/m * dmae(yc, y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + k))
-    dk = np.sum(2/m * dmae(yc, y) * a * np.exp(x * (b * np.exp(c * x + d) + h) + k))
-    #dp = np.sum(2/m * dmae(yc, y))
+    # da = np.sum(2/m * dmae(yc, y) * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    # #db = np.sum(2/m * dmae(yc, y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    # #dc = np.sum(2/m * dmae(yc, y) * a * b * x**2 * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    # #dd = np.sum(2/m * dmae(yc, y) * a * b * x * np.exp(x * (b * np.exp(c * x + d) + h) + c * x + d + k))
+    # dh = np.sum(2/m * dmae(yc, y) * a * x * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    # dk = np.sum(2/m * dmae(yc, y) * a * np.exp(x * (b * np.exp(c * x + d) + h) + k))
+    # #dp = np.sum(2/m * dmae(yc, y))
     
     a -= da * learning_rate
     b -= db * learning_rate
@@ -154,7 +179,7 @@ def find_curve(x, y, learning_rate, epochs):
     d -= dd * learning_rate
     h -= dh * learning_rate
     k -= dk * learning_rate
-    #p -= dp * learning_rate
+    p -= dp * learning_rate
   #a = np.around(a, 3)
   #b = np.around(b, 3)
   print("-------")
@@ -177,9 +202,13 @@ def plot(x, y):
   Outputs nothing.
   '''
   fig, ax = plt.subplots()
+  y = fill_gaps(y)
+  y = np.log(y)
+  #ax.plot(x, y, 'b.')
   ax.semilogx(x, y, 'b.')
-  xc, yc, params = find_curve(x, y, learning_rate=1 * 10**(-4), epochs=1 * 10**5)
+  xc, yc, params = find_curve(x, y, learning_rate=1 * 10**(-5), epochs=10 * 10**5)
   ax.semilogx(xc, yc, '#ff7f0e')#, label=f'${params[0]}e^{{{params[1]}x}}$')
+  #ax.plot(xc, yc, '#ff7f0e')
   plt.title("Nofap time distribution")
   plt.xlabel("nofap time (days)")
   plt.ylabel("proportion of people")
